@@ -5,6 +5,27 @@
 {% block content %}
     <div class="row">
         <div class="col-lg-6">
+            <div class="box-element">
+                <a class="btn btn-outline-dark" href="{% url 'cart' %}">&#x2190; Back to Cart</a>
+                <hr>
+                <h3>Order Summary</h3>
+                <hr>
+
+                {% for product in products %}
+                    <div class="cart-row">
+                        <div style="flex:2"><img class="row-image" src="{{ product.product.image_URL }}"></div>
+                        <div style="flex:2"><p>{{ product.product.name }}</p></div>
+                        <div style="flex:1"><p>{{ product.product.price }}</p></div>
+                        <div style="flex:1"><p>{{ product.amount }}</p></div>
+                    </div>
+                {% endfor %}
+
+                <h5>Items: {{ purchase.get_cart_products }}</h5>
+                <h5>Total: {{ purchase.get_cart_total|floatformat:2 }} ₴</h5>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
             <div class="box-element" id="form-wrapper">
                 <form id="form">
                     <div id="user-info">
@@ -47,25 +68,6 @@
                 <small>Paypal Options</small>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="box-element">
-                <a class="btn btn-outline-dark" href="{% url 'cart' %}">&#x2190; Back to Cart</a>
-                <hr>
-                <h3>Order Summary</h3>
-                <hr>
 
-                {% for product in products %}
-                    <div class="cart-row">
-                        <div style="flex:2"><img class="row-image" src="{{ product.product.image_URL }}"></div>
-                        <div style="flex:2"><p>{{ product.product.name }}</p></div>
-                        <div style="flex:1"><p>{{ product.product.price }}</p></div>
-                        <div style="flex:1"><p>{{ product.amount }}</p></div>
-                    </div>
-                {% endfor %}
-
-                <h5>Items: {{ purchase.get_cart_products }}</h5>
-                <h5>Total: {{ purchase.get_cart_total|floatformat:2 }} ₴</h5>
-            </div>
-        </div>
     </div>
 {% endblock %}

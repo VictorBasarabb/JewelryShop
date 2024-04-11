@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 
 from .models import *
@@ -17,11 +18,14 @@ class CartView(LoginRequiredMixin, TemplateView):
     template_name = 'store/cart.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['products'] = Cart.objects.all()
-        purchase, created = Purchase.objects.get_or_create(**kwargs)
-        context['purchase'] = purchase
-        context['is_authenticated'] = self.request.user.is_authenticated
+        if self.request.user.is_authenticated:
+            context = super().get_context_data(**kwargs)
+            context['products'] = Cart.objects.all()
+            purchase, created = Purchase.objects.get_or_create(**kwargs)
+            context['purchase'] = purchase
+            context['is_authenticated'] = True
+        else:
+            return HttpResponseRedirect('empty_cart')
         return context
     # TODO: implement not authenticated user cart
 
@@ -38,3 +42,5 @@ class CheckoutView(TemplateView):
         return context
 
 
+class EmptyCart(TemplateView):
+    template_name = 'store/empty_cart.html'
