@@ -1,6 +1,9 @@
+import json
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, UpdateView
+from django.http import JsonResponse
 
 from .models import *
 
@@ -44,3 +47,38 @@ class CheckoutView(TemplateView):
 
 class EmptyCart(TemplateView):
     template_name = 'store/empty_cart.html'
+
+
+class ProductDetailsView(TemplateView):
+    template_name = 'store/product_details.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['product_details'] = Product.objects.all()
+        return context
+
+
+def update_item(request):
+    data = json.loads(request.body)
+    product_id = data['productId']
+    action = data['action']
+    print('Action: ', action)
+    print('Product: ', product_id)
+
+    customer = request.user.customer
+    product = Product.objects.get(id=product_id)
+    purchase, created = Purchase.objects.get_or_create(customer=customer)
+    cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
+
+    if action == 'add':
+        cart.amount = cart.amount + 1
+    elif action == 'remove':
+        cart.amount = cart.amount - 1
+
+    cart.save()
+
+    if cart.amount <= 0:
+        cart.delete()
+
+    return JsonResponse('Item was added', safe=False)
+

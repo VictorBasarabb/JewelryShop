@@ -1,0 +1,16 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+        <p>{{ product.name }}</p>
+        <p>{{ product.price }}</p>
+        <p>{{ product.producer }}</p>
+        <p>{{ product.material }}</p>
+        <p>{{ product.weight }}</p>
+        <p>{{ product.size_in_stock }}</p>
+        <p>{{ product.size_available_to_order }}</p>
+        <p>{{ product.year }}</p>
+        <p>{{ product.description }}</p>
+        <p>{{ product.code }}</p>
+        <p>{{ product.category }}</p>
+        <p>{{ product.image }}</p>
+{% endblock %}

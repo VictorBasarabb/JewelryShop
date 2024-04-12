@@ -39,7 +39,7 @@ class Product(models.Model):
 
 
 class Customer(models.Model):
-    # user = models.OneToOneField(User, null=True, on_delete=models.CASCADE, blank=True)
+    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE, blank=True)
     name = models.CharField(max_length=64, null=True)
     phone_number = models.CharField(max_length=10)
     email = models.EmailField(null=True)
@@ -51,7 +51,7 @@ class Customer(models.Model):
 class Purchase(models.Model):
     date = models.DateField(auto_now_add=True)
     # product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return str(self.id)
@@ -71,7 +71,7 @@ class Purchase(models.Model):
 
 class Cart(models.Model):
     # user = models.OneToOneField(User, null=True, on_delete=models.CASCADE, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE)
     amount = models.IntegerField()
 
