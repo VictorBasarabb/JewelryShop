@@ -14,6 +14,10 @@ class ShopView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['products'] = Product.objects.all()
+        customer = self.request.user.customer
+        purchase, created = Purchase.objects.get_or_create(customer=customer)
+        cart_items = purchase.get_cart_products
+        context['cart_items'] = cart_items
         return context
 
 
@@ -21,16 +25,20 @@ class CartView(LoginRequiredMixin, TemplateView):
     template_name = 'store/cart.html'
 
     def get_context_data(self, **kwargs):
+
         if self.request.user.is_authenticated:
             context = super().get_context_data(**kwargs)
             context['products'] = Cart.objects.all()
             purchase, created = Purchase.objects.get_or_create(**kwargs)
             context['purchase'] = purchase
+            customer = self.request.user.customer
+            purchase, created = Purchase.objects.get_or_create(customer=customer)
+            cart_items = purchase.get_cart_products
+            context['cart_items'] = cart_items
             context['is_authenticated'] = True
         else:
             return HttpResponseRedirect('empty_cart')
         return context
-    # TODO: implement not authenticated user cart
 
 
 class CheckoutView(TemplateView):
@@ -42,6 +50,10 @@ class CheckoutView(TemplateView):
         purchase, created = Purchase.objects.get_or_create(**kwargs)
         context['purchase'] = purchase
         context['is_authenticated'] = self.request.user.is_authenticated
+        customer = self.request.user.customer
+        purchase, created = Purchase.objects.get_or_create(customer=customer)
+        cart_items = purchase.get_cart_products
+        context['cart_items'] = cart_items
         return context
 
 
@@ -65,7 +77,7 @@ def update_item(request):
     print('Action: ', action)
     print('Product: ', product_id)
 
-    customer = request.user.pk
+    customer = request.user.customer
     product = Product.objects.get(id=product_id)
     purchase, created = Purchase.objects.get_or_create(customer=customer)
     cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)

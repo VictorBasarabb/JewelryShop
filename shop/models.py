@@ -30,12 +30,11 @@ class Product(models.Model):
         return self.name
 
     # @property
+    @property
     def image_URL(self):
-        try:
-            url = self.image.url
-        except:
-            url = ''
-        return url
+        if not self.image:
+            return ""
+        return self.image.url
 
 
 class Customer(models.Model):
