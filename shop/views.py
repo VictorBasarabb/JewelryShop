@@ -65,7 +65,7 @@ def update_item(request):
     print('Action: ', action)
     print('Product: ', product_id)
 
-    customer = request.user.customer
+    customer = request.user.pk
     product = Product.objects.get(id=product_id)
     purchase, created = Purchase.objects.get_or_create(customer=customer)
     cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
