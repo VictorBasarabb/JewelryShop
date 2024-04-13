@@ -1,7 +1,9 @@
 import json
 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.views import View
 from django.views.generic import TemplateView, UpdateView, DetailView
 from django.http import JsonResponse
@@ -15,7 +17,7 @@ class ShopView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['products'] = Product.objects.all()
-        customer = self.request.user.customer
+        customer = self.request.user.pk
         purchase, created = Purchase.objects.get_or_create(customer=customer)
         cart_items = purchase.get_cart_products
         context['cart_items'] = cart_items
@@ -30,9 +32,9 @@ class CartView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_authenticated:
             context = super().get_context_data(**kwargs)
             context['products'] = Cart.objects.all()
-            purchase, created = Purchase.objects.get_or_create(**kwargs)
+            purchase, created = Purchase.objects.get_or_create(customer=self.request.user.pk)
             context['purchase'] = purchase
-            customer = self.request.user.customer
+            customer = self.request.user.pk
             purchase, created = Purchase.objects.get_or_create(customer=customer)
             cart_items = purchase.get_cart_products
             context['cart_items'] = cart_items
@@ -51,7 +53,7 @@ class CheckoutView(TemplateView):
         purchase, created = Purchase.objects.get_or_create(**kwargs)
         context['purchase'] = purchase
         context['is_authenticated'] = self.request.user.is_authenticated
-        customer = self.request.user.customer
+        customer = self.request.user.pk
         purchase, created = Purchase.objects.get_or_create(customer=customer)
         cart_items = purchase.get_cart_products
         context['cart_items'] = cart_items
@@ -69,7 +71,7 @@ class ProductDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        customer = self.request.user.customer
+        customer = self.request.user.pk
         purchase, created = Purchase.objects.get_or_create(customer=customer)
         cart_items = purchase.get_cart_products
         context['cart_items'] = cart_items
@@ -87,7 +89,7 @@ class UpdateItemView(View):
         print('Action: ', action)
         print('Product: ', product_id)
 
-        customer = request.user.customer
+        customer = request.user.pk
         product = Product.objects.get(id=product_id)
         purchase, created = Purchase.objects.get_or_create(customer=customer)
         cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
@@ -104,27 +106,25 @@ class UpdateItemView(View):
 
         return JsonResponse('Item was added', safe=False)
 
-# def update_item(request):
-#     data = json.loads(request.body)
-#     product_id = data['productId']
-#     action = data['action']
-#     print('Action: ', action)
-#     print('Product: ', product_id)
-#
-#     customer = request.user.customer
-#     product = Product.objects.get(id=product_id)
-#     purchase, created = Purchase.objects.get_or_create(customer=customer)
-#     cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
-#
-#     if action == 'add':
-#         cart.amount = cart.amount + 1
-#     elif action == 'remove':
-#         cart.amount = cart.amount - 1
-#
-#     cart.save()
-#
-#     if cart.amount <= 0:
-#         cart.delete()
-#
-#     return JsonResponse('Item was added', safe=False)
 
+class LogInView(TemplateView):
+    template_name = 'store/login.html'
+
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return HttpResponseRedirect(reverse("store"))
+        context = self.get_context_data()
+        context['error'] = 'Invalid Parameters!'
+        context['username'] = username
+        return self.render_to_response(context=context)
+
+
+class LogOutView(View):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            logout(request=request)
+        return HttpResponseRedirect(reverse("login"))
