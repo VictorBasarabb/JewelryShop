@@ -1,11 +1,12 @@
 import json
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
-from django.views.generic import TemplateView, UpdateView, DetailView
+from django.views.generic import TemplateView, UpdateView, DetailView, ListView
 from django.http import JsonResponse
 
 from .models import *
@@ -21,6 +22,8 @@ class ShopView(TemplateView):
         purchase, created = Purchase.objects.get_or_create(customer=customer)
         cart_items = purchase.get_cart_products
         context['cart_items'] = cart_items
+        categories = Category.objects.all()
+        context['categories'] = categories
         return context
 
 
@@ -34,8 +37,8 @@ class CartView(LoginRequiredMixin, TemplateView):
             context['products'] = Cart.objects.all()
             purchase, created = Purchase.objects.get_or_create(customer=self.request.user.pk)
             context['purchase'] = purchase
-            customer = self.request.user.pk
-            purchase, created = Purchase.objects.get_or_create(customer=customer)
+            # customer = self.request.user.pk
+            # purchase, created = Purchase.objects.get_or_create(customer=customer)
             cart_items = purchase.get_cart_products
             context['cart_items'] = cart_items
             context['is_authenticated'] = True
@@ -128,3 +131,41 @@ class LogOutView(View):
         if request.user.is_authenticated:
             logout(request=request)
         return HttpResponseRedirect(reverse("login"))
+
+
+# class SignUpView(TemplateView):
+#     template_name = 'store/signup.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['signup_form'] = UserCreationForm()
+#         return context
+#
+#     def post(self, request, *args, **kwargs):
+#         print(request.POST)
+#         form = UserCreationForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             login(request, user=form.instance)
+#             return HttpResponseRedirect(reverse("store"))
+#         context = self.get_context_data()
+#         context['signup_form'] = form
+#         return self.render_to_response(context=context)
+
+
+class ProductListViewByCategory(ListView):
+    template_name = 'store/products_by_category.html'
+    context_object_name = 'filtred_products'
+    model = Product
+
+    def get_queryset(self):
+        category_name = self.kwargs['category_name']
+        return Product.objects.filter(category__name=category_name)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        customer = self.request.user.pk
+        purchase, created = Purchase.objects.get_or_create(customer=customer)
+        cart_items = purchase.get_cart_products
+        context['cart_items'] = cart_items
+        return context

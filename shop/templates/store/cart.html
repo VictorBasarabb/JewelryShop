@@ -31,12 +31,12 @@
                     <div style="flex: 1"><strong>Total</strong></div>
                 </div>
 
-            {% if user.is_authenticated %}
-                {% for product in products %}
-                    <div class="cart-row">
+                {% if user.is_authenticated %}
+                    {% for product in products %}
+                        <div class="cart-row">
                             <div style="flex: 2"><img class="row-image" src="{{ product.product.image_URL }}"></div>
                             <div style="flex: 2">{{ product.product.name }}</div>
-                            <div style="flex: 1">{{ product.product.price|floatformat:2}} ₴</div>
+                            <div style="flex: 1">{{ product.product.price|floatformat:2 }} ₴</div>
                             <div style="flex: 1">
                                 <p class="quantity">{{ product.amount }}</p>
                                 <div class="quantity">
@@ -44,11 +44,11 @@
                                     <img class="chg-quantity" src="{% static 'images/arrow-down.png' %}">
                                 </div>
                             </div>
-                            <div style="flex: 1">{{ product.get_total_price}} ₴</div>
-                    </div>
-                {% endfor %}
-            {% endif %}
+                            <div style="flex: 1">{{ product.get_total_price }} ₴</div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
-            </div>
+        </div>
     </div>
 {% endblock %}

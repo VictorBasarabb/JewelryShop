@@ -1,8 +1,8 @@
 {% extends 'store/base.html' %}
-{% load static %}
+
 {% block content %}
     <div class="row">
-        {% for product in products %}
+        {% for product in filtred_products %}
             <div class="col-lg-4">
                 <img class="thumbnail" src="{{ product.image_URL }}">
                 <div class="box-element product">
@@ -20,7 +20,4 @@
             </div>
         {% endfor %}
     </div>
-{% endblock content %}
-
-
-
+{% endblock %}
