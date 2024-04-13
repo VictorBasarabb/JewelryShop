@@ -1,16 +1,63 @@
 {% extends 'store/base.html' %}
 
 {% block content %}
-        <p>{{ product.name }}</p>
-        <p>{{ product.price }}</p>
-        <p>{{ product.producer }}</p>
-        <p>{{ product.material }}</p>
-        <p>{{ product.weight }}</p>
-        <p>{{ product.size_in_stock }}</p>
-        <p>{{ product.size_available_to_order }}</p>
-        <p>{{ product.year }}</p>
-        <p>{{ product.description }}</p>
-        <p>{{ product.code }}</p>
-        <p>{{ product.category }}</p>
-        <p>{{ product.image }}</p>
+    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    <div class="product">
+        <div class="details">
+            <h2>{{ product.name }}</h2>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>Producer:</strong> {{ product.producer }}</p>
+            <p><strong>Material:</strong> {{ product.material }}</p>
+            <p><strong>Weight:</strong> {{ product.weight }} g</p>
+            <p><strong>Size in Stock:</strong>
+                {% for size in product.size_in_stock %}
+                    {{ size }}
+                {% endfor %}
+            </p>
+            <p><strong>Size Available to Order:</strong>
+                {% for size in product.size_available_to_order %}
+                    {{ size }}
+                {% endfor %}
+            </p>
+            <p><strong>Year:</strong> {{ product.year }}</p>
+            <p><strong>Description:</strong> {{ product.description }}</p>
+            <p><strong>Product Code:</strong> {{ product.code }}</p>
+            <p><strong>Category:</strong> {{ product.category }}</p>
+        </div>
+    </div>
+    <style>
+    .product {
+        margin: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 400px;
+        display: inline-block;
+        background-color: #f9f9f9;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+    }
+    .details {
+        margin-top: 10px;
+    }
+    .details p {
+        margin-bottom: 5px;
+    }
+    .details img {
+        max-width: 100%;
+        height: auto;
+    }
+    h2 {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    p {
+        font-size: 14px;
+        color: #666;
+    }
+    strong {
+        color: #000;
+    }
+</style>
+
 {% endblock %}

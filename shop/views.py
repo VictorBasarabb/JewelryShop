@@ -2,7 +2,8 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
-from django.views.generic import TemplateView, UpdateView
+from django.views import View
+from django.views.generic import TemplateView, UpdateView, DetailView
 from django.http import JsonResponse
 
 from .models import *
@@ -61,36 +62,69 @@ class EmptyCart(TemplateView):
     template_name = 'store/empty_cart.html'
 
 
-class ProductDetailsView(TemplateView):
+class ProductDetailsView(DetailView):
     template_name = 'store/product_details.html'
+    model = Product
+    context_object_name = 'product'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['product_details'] = Product.objects.all()
+        customer = self.request.user.customer
+        purchase, created = Purchase.objects.get_or_create(customer=customer)
+        cart_items = purchase.get_cart_products
+        context['cart_items'] = cart_items
         return context
 
+    def get_object(self, queryset=None):
+        return self.model.objects.get(name=self.kwargs.get('name'))
 
-def update_item(request):
-    data = json.loads(request.body)
-    product_id = data['productId']
-    action = data['action']
-    print('Action: ', action)
-    print('Product: ', product_id)
 
-    customer = request.user.customer
-    product = Product.objects.get(id=product_id)
-    purchase, created = Purchase.objects.get_or_create(customer=customer)
-    cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
+class UpdateItemView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        product_id = data['productId']
+        action = data['action']
+        print('Action: ', action)
+        print('Product: ', product_id)
 
-    if action == 'add':
-        cart.amount = cart.amount + 1
-    elif action == 'remove':
-        cart.amount = cart.amount - 1
+        customer = request.user.customer
+        product = Product.objects.get(id=product_id)
+        purchase, created = Purchase.objects.get_or_create(customer=customer)
+        cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
 
-    cart.save()
+        if action == 'add':
+            cart.amount = cart.amount + 1
+        elif action == 'remove':
+            cart.amount = cart.amount - 1
 
-    if cart.amount <= 0:
-        cart.delete()
+        cart.save()
 
-    return JsonResponse('Item was added', safe=False)
+        if cart.amount <= 0:
+            cart.delete()
+
+        return JsonResponse('Item was added', safe=False)
+
+# def update_item(request):
+#     data = json.loads(request.body)
+#     product_id = data['productId']
+#     action = data['action']
+#     print('Action: ', action)
+#     print('Product: ', product_id)
+#
+#     customer = request.user.customer
+#     product = Product.objects.get(id=product_id)
+#     purchase, created = Purchase.objects.get_or_create(customer=customer)
+#     cart, created = Cart.objects.get_or_create(purchase=purchase, product=product)
+#
+#     if action == 'add':
+#         cart.amount = cart.amount + 1
+#     elif action == 'remove':
+#         cart.amount = cart.amount - 1
+#
+#     cart.save()
+#
+#     if cart.amount <= 0:
+#         cart.delete()
+#
+#     return JsonResponse('Item was added', safe=False)
 
